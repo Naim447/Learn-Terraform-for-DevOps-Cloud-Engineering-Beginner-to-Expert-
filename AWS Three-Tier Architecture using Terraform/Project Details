@@ -1,10 +1,5 @@
 # 🚀 AWS Three-Tier Architecture using Terraform
 
-![Terraform](https://img.shields.io/badge/Terraform-IaC-purple)
-![AWS](https://img.shields.io/badge/AWS-Cloud-orange)
-![DevOps](https://img.shields.io/badge/DevOps-Project-blue)
-![Infrastructure](https://img.shields.io/badge/Infrastructure-Automation-green)
-
 A real-world **DevOps Infrastructure as Code (IaC)** project that deploys a complete **Three-Tier Architecture on AWS using Terraform**.
 
 This project demonstrates how enterprise applications are deployed using:
