@@ -1,1 +1,478 @@
+# 🚀 AWS Three-Tier Architecture using Terraform
+
+![Terraform](https://img.shields.io/badge/Terraform-IaC-purple)
+![AWS](https://img.shields.io/badge/AWS-Cloud-orange)
+![DevOps](https://img.shields.io/badge/DevOps-Project-blue)
+![Infrastructure](https://img.shields.io/badge/Infrastructure-Automation-green)
+
+A real-world **DevOps Infrastructure as Code (IaC)** project that deploys a complete **Three-Tier Architecture on AWS using Terraform**.
+
+This project demonstrates how enterprise applications are deployed using:
+
+* VPC Networking
+* Public & Private Subnets
+* Application Load Balancer (ALB)
+* EC2 Application Servers
+* RDS MySQL Database
+* Security Groups
+* Internet Gateway
+* Route Tables
+* Terraform Automation
+
+Perfect for:
+
+* DevOps Engineers
+* Cloud Engineers
+* AWS Solution Architects
+* Terraform Interview Preparation
+* Resume & Portfolio Projects
+
+---
+
+# 📑 Table of Contents
+
+* Project Overview
+* Architecture Diagram
+* Infrastructure Components
+* Prerequisites
+* Project Structure
+* Deployment Steps
+* Verification
+* Cleanup
+* Production Improvements
+* Learning Outcomes
+
+---
+
+# 🎯 Project Objective
+
+Deploy a production-style **3-Tier Architecture** on AWS using Terraform.
+
+The architecture consists of:
+
+### Presentation Layer
+
+* Application Load Balancer (ALB)
+
+### Application Layer
+
+* EC2 Application Servers
+
+### Database Layer
+
+* Amazon RDS MySQL
+
+Infrastructure is provisioned entirely through Terraform code.
+
+---
+
+# 🏗 Architecture Diagram
+
+```text
+                    Internet
+                        |
+            +----------------------+
+            | Application Load     |
+            | Balancer (ALB)       |
+            +----------+-----------+
+                       |
+         --------------------------------
+         |                              |
++----------------+          +----------------+
+| EC2 App Server |          | EC2 App Server |
+| Private Subnet |          | Private Subnet |
++----------------+          +----------------+
+         \                       /
+          \                     /
+           ---------------------
+                    |
+          +------------------+
+          |   RDS MySQL DB   |
+          +------------------+
+
+-------------------------------------------------
+
+Public Subnet
+     |
+Internet Gateway
+     |
+NAT Gateway
+
+-------------------------------------------------
+
+VPC CIDR: 10.0.0.0/16
+```
+
+---
+
+# 🧱 Infrastructure Components
+
+| Resource         | Purpose                   |
+| ---------------- | ------------------------- |
+| VPC              | Isolated AWS Network      |
+| Public Subnet    | ALB & NAT Gateway         |
+| Private Subnet   | EC2 Application Servers   |
+| Internet Gateway | Internet Access           |
+| Route Tables     | Traffic Routing           |
+| Security Groups  | Firewall Rules            |
+| ALB              | Load Balancing            |
+| EC2              | Application Hosting       |
+| RDS MySQL        | Database Layer            |
+| Terraform        | Infrastructure Automation |
+
+---
+
+# 🔧 Prerequisites
+
+## AWS Account
+
+Create:
+
+* AWS Free Tier Account
+* IAM User
+
+### Required Permissions
+
+```text
+AmazonEC2FullAccess
+AmazonVPCFullAccess
+AmazonRDSFullAccess
+IAMReadOnlyAccess
+```
+
+---
+
+## Install Terraform
+
+Verify installation:
+
+```bash
+terraform version
+```
+
+Expected output:
+
+```bash
+Terraform v1.x.x
+```
+
+---
+
+## Install AWS CLI
+
+Verify installation:
+
+```bash
+aws --version
+```
+
+Configure credentials:
+
+```bash
+aws configure
+```
+
+Provide:
+
+```text
+AWS Access Key
+AWS Secret Access Key
+Region: ap-south-1
+Output Format: json
+```
+
+Validate:
+
+```bash
+aws sts get-caller-identity
+```
+
+---
+
+# 📁 Project Structure
+
+```text
+terraform-3tier-project/
+│
+├── provider.tf
+├── variables.tf
+├── vpc.tf
+├── security.tf
+├── ec2.tf
+├── alb.tf
+├── rds.tf
+├── outputs.tf
+├── terraform.tfvars
+├── userdata.sh
+│
+└── README.md
+```
+
+---
+
+# 🚀 Deployment Steps
+
+## Step 1: Clone Repository
+
+```bash
+git clone https://github.com/your-username/terraform-3tier-project.git
+
+cd terraform-3tier-project
+```
+
+---
+
+## Step 2: Initialize Terraform
+
+```bash
+terraform init
+```
+
+---
+
+## Step 3: Validate Configuration
+
+```bash
+terraform validate
+```
+
+---
+
+## Step 4: Format Terraform Code
+
+```bash
+terraform fmt
+```
+
+---
+
+## Step 5: Review Execution Plan
+
+```bash
+terraform plan
+```
+
+---
+
+## Step 6: Deploy Infrastructure
+
+```bash
+terraform apply
+```
+
+Approve:
+
+```text
+yes
+```
+
+Terraform will create:
+
+* VPC
+* Public Subnet
+* Private Subnet
+* Internet Gateway
+* Security Groups
+* EC2 Instances
+* Application Load Balancer
+* RDS MySQL
+
+---
+
+# 🌐 Verification
+
+## Verify VPC
+
+AWS Console → VPC
+
+Expected:
+
+```text
+VPC Created
+Subnet Created
+Route Tables Created
+Internet Gateway Attached
+```
+
+---
+
+## Verify EC2
+
+AWS Console → EC2
+
+Expected:
+
+```text
+2 EC2 Instances Running
+Apache Installed
+```
+
+---
+
+## Verify Application Load Balancer
+
+Retrieve ALB DNS:
+
+```bash
+terraform output
+```
+
+Example:
+
+```text
+alb_dns =
+my-alb-123.ap-south-1.elb.amazonaws.com
+```
+
+Open browser:
+
+```text
+http://ALB-DNS
+```
+
+Expected:
+
+```text
+Welcome to Three Tier App
+```
+
+---
+
+## Verify RDS
+
+AWS Console → RDS
+
+Expected:
+
+```text
+Status = Available
+```
+
+Connect from EC2:
+
+```bash
+mysql -h endpoint -u admin -p
+```
+
+---
+
+# 🧹 Destroy Infrastructure
+
+To avoid AWS charges:
+
+```bash
+terraform destroy
+```
+
+Confirm:
+
+```text
+yes
+```
+
+---
+
+# 📚 Learning Outcomes
+
+After completing this project, you will understand:
+
+✅ Infrastructure as Code (IaC)
+
+✅ Terraform Basics
+
+✅ AWS Networking
+
+✅ VPC Design
+
+✅ Security Groups
+
+✅ EC2 Provisioning
+
+✅ Load Balancing
+
+✅ RDS Deployment
+
+✅ Terraform State Management
+
+✅ Real-World Cloud Architecture
+
+---
+
+# 🏢 Production-Grade Enhancements
+
+For enterprise environments, implement:
+
+### Networking
+
+* 2 Public Subnets across 2 Availability Zones
+* 2 Private Application Subnets
+* 2 Private Database Subnets
+* NAT Gateway
+* Bastion Host
+
+### Scalability
+
+* Auto Scaling Group
+* Launch Templates
+* Multi-AZ Architecture
+
+### Security
+
+* AWS WAF
+* Secrets Manager
+* IAM Roles
+* Security Hardening
+
+### Monitoring
+
+* CloudWatch
+* CloudTrail
+* SNS Alerts
+
+### Terraform Best Practices
+
+* S3 Remote State
+* DynamoDB State Locking
+* Terraform Modules
+* Workspaces
+
+### CI/CD Integration
+
+* Jenkins Pipeline
+* GitHub Actions
+* Automated Terraform Deployments
+
+### DNS & SSL
+
+* Route53
+* ACM SSL Certificates
+* HTTPS Load Balancer
+
+---
+
+# 🎤 Interview Questions Covered
+
+This project helps answer:
+
+* What is a Three-Tier Architecture?
+* How does Terraform work?
+* What is Infrastructure as Code?
+* Difference between Public and Private Subnets?
+* What is an Internet Gateway?
+* Why use an Application Load Balancer?
+* How does RDS integrate with EC2?
+* What is Terraform State?
+* What are Terraform Modules?
+* How do you secure AWS Infrastructure?
+
+---
+
+# 👨‍💻 Author
+
+**Naim Khan**
+
+DevOps Engineer | AWS Cloud | Terraform | Docker | Kubernetes | Jenkins
+
+If you found this project useful, give it a ⭐ on GitHub.
+
 
