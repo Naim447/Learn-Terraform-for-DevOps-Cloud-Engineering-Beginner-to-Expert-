@@ -1,0 +1,330 @@
+Terraform with Kubernetes
+Complete Hands-On Lab: Deploy NGINX on Kubernetes using Terraform (AWS EC2)
+This lab simulates a real DevOps project where Terraform manages Kubernetes resources.
+
+Project Architecture
+AWS EC2 (Ubuntu)
+        │
+        ▼
+   Terraform
+        │
+        ▼
+ Kubernetes Cluster
+   (Minikube)
+        │
+ ┌──────┴──────┐
+ ▼             ▼
+Namespace    Service
+                  │
+                  ▼
+            NGINX Pod
+
+Project Objective:
+Using Terraform:
+✅ Connect to Kubernetes
+✅ Create Namespace
+✅ Create Deployment
+✅ Create Service
+✅ Verify Application
+Prerequisites
+AWS Account
+EC2 Instance
+Ubuntu 22.04
+Security Group:
+22     SSH
+80     HTTP
+30000-32767  NodePort
+Recommended:
+t3.medium
+2 CPU
+4 GB RAM
+STEP 1: Launch EC2
+Launch Ubuntu Server
+Connect:
+ssh -i terraform.pem ubuntu@PUBLIC-IP
+Update server:
+sudo apt update -y
+sudo apt upgrade -y
+________________________________________
+STEP 2: Install Docker
+Install dependencies:
+sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+Add Docker repository:
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+sudo gpg --dearmor -o /usr/share/keyrings/docker.gpg
+echo \
+"deb [arch=$(dpkg --print-architecture) \
+signed-by=/usr/share/keyrings/docker.gpg] \
+https://download.docker.com/linux/ubuntu \
+$(lsb_release -cs) stable" | \
+sudo tee /etc/apt/sources.list.d/docker.list
+Install Docker:
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io
+Start Docker:
+sudo systemctl enable docker
+sudo systemctl start docker
+Verify:			docker --version
+Add user:
+sudo usermod -aG docker ubuntu
+newgrp docker
+Verify:	docker ps
+________________________________________
+STEP 3: Install Kubectl
+Download:
+curl -LO "https://dl.k8s.io/release/$(curl -L -s \
+https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+Make executable:	chmod +x kubectl
+Move:	sudo mv kubectl /usr/local/bin/
+Verify:	kubectl version --client
+________________________________________
+STEP 4: Install Minikube
+Download:
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+Install:		sudo install minikube-linux-amd64 /usr/local/bin/minikube
+Verify:		minikube version
+________________________________________
+STEP 5: Start Kubernetes Cluster
+Start Minikube:	minikube start --driver=docker
+Check:			kubectl get nodes
+Expected:
+NAME       STATUS   ROLES
+minikube   Ready    control-plane
+________________________________________
+STEP 6: Install Terraform
+Download:
+wget https://releases.hashicorp.com/terraform/1.8.5/terraform_1.8.5_linux_amd64.zip
+Install unzip:		sudo apt install unzip -y
+Extract:		unzip terraform_1.8.5_linux_amd64.zip
+Move:			sudo mv terraform /usr/local/bin/
+Verify:		terraform version
+________________________________________
+STEP 7: Create Project Directory
+mkdir terraform-k8s
+cd terraform-k8s
+Project Structure:
+terraform-k8s/
+│
+├── provider.tf
+├── namespace.tf
+├── deployment.tf
+├── service.tf
+└── outputs.tf
+
+
+ 
+________________________________________
+STEP 8: Configure Kubernetes Access
+Verify kubeconfig:	kubectl config view
+Check location:	ls ~/.kube/config
+Expected:	/home/ubuntu/.kube/config
+________________________________________
+STEP 9: Create Provider Configuration
+provider.tf
+terraform {
+  required_providers {
+    kubernetes = {
+      source = "hashicorp/kubernetes"
+      version = "~> 2.30"
+    }
+  }
+}
+
+provider "kubernetes" {
+  config_path = "~/.kube/config"
+}
+________________________________________
+STEP 10: Create Namespace
+namespace.tf
+resource "kubernetes_namespace" "dev" {
+  metadata {
+    name = "dev"
+  }
+}
+________________________________________
+STEP 11: Create Deployment
+deployment.tf
+resource "kubernetes_deployment" "nginx" {
+
+  metadata {
+    name      = "nginx-deployment"
+    namespace = kubernetes_namespace.dev.metadata[0].name
+
+    labels = {
+      app = "nginx"
+    }
+  }
+
+  spec {
+
+    replicas = 2
+
+    selector {
+      match_labels = {
+        app = "nginx"
+      }
+    }
+
+    template {
+
+      metadata {
+        labels = {
+          app = "nginx"
+        }
+      }
+
+      spec {
+
+        container {
+
+          image = "nginx:latest"
+          name  = "nginx"
+
+          port {
+            container_port = 80
+          }
+        }
+      }
+    }
+  }
+}
+________________________________________
+STEP 12: Create Service
+service.tf
+resource "kubernetes_service" "nginx" {
+
+  metadata {
+    name      = "nginx-service"
+    namespace = kubernetes_namespace.dev.metadata[0].name
+  }
+
+  spec {
+
+    selector = {
+      app = "nginx"
+    }
+
+    port {
+      port        = 80
+      target_port = 80
+      node_port   = 32767
+    }
+
+    type = "NodePort"
+  }
+}
+________________________________________
+STEP 13: Outputs
+outputs.tf
+output "service_name" {
+  value = kubernetes_service.nginx.metadata[0].name
+}
+
+output "namespace" {
+  value = kubernetes_namespace.dev.metadata[0].name
+}
+________________________________________
+STEP 14: Initialize Terraform
+terraform init
+Expected:	Terraform has been successfully initialized
+
+STEP 15: Validate Configuration
+terraform validate
+Expected:
+Success!
+________________________________________
+STEP 16: Terraform Plan
+terraform plan
+Terraform will show:
++ kubernetes_namespace
++ kubernetes_deployment
++ kubernetes_service
+________________________________________
+STEP 17: Deploy Resources
+terraform apply
+Type:	yes
+Expected:	Apply complete
+ 
+________________________________________
+STEP 18: Verify Namespace
+kubectl get ns
+Expected:
+NAME
+default
+dev
+kube-system
+________________________________________
+STEP 19: Verify Deployment
+kubectl get deployments -n dev
+Expected:
+NAME               READY
+nginx-deployment   2/2
+________________________________________
+STEP 20: Verify Pods
+kubectl get pods -n dev
+Expected:
+NAME
+nginx-deployment-xxxx
+nginx-deployment-yyyy
+________________________________________
+STEP 21: Verify Service
+kubectl get svc -n dev
+Expected:
+NAME            TYPE
+nginx-service   NodePort
+________________________________________
+STEP 22: Get Minikube IP
+minikube ip
+Example:
+192.168.49.2
+________________________________________
+STEP 23: Test Application
+Inside EC2:
+curl http://$(minikube ip):30080
+Expected:
+Welcome to nginx!
+________________________________________
+STEP 24: Access from Browser
+Create tunnel:
+kubectl port-forward service/nginx-service \
+-n dev 8080:80
+Open:
+http://EC2-PUBLIC-IP:8080
+You should see:
+Welcome to nginx!
+________________________________________
+STEP 25: View Terraform State
+terraform state list
+Expected:
+kubernetes_namespace.dev
+kubernetes_deployment.nginx
+kubernetes_service.nginx
+________________________________________
+STEP 26: Scale Application
+Edit deployment:
+replicas = 5
+Apply:
+terraform apply
+Verify:
+kubectl get pods -n dev
+Expected:
+5 Pods Running
+________________________________________
+STEP 27: Destroy Infrastructure
+terraform destroy
+Type:
+yes
+Verify:
+kubectl get all -n dev
+Nothing should remain.
+--------------------------------------
+
+terraform apply
+
+kubectl get pods -n dev
+ 
+
+terraform destroy
+
+
+ 
